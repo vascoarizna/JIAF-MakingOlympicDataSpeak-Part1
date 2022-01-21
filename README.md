@@ -340,11 +340,6 @@ nullSum.sort_values(ascending=False).head(5)
 ```
 
     Sum of NULL values in each column. 
-    
-
-
-
-
     Medal     231333
     Weight     62875
     Height     60171
@@ -468,11 +463,6 @@ nullSum.sort_values(ascending=False).head(5)
 ```
 
     Sum of NULL values in each column. 
-    
-
-
-
-
     Age1       261784
     Medal      231333
     Height1    213028
@@ -557,11 +547,6 @@ nullSum.sort_values(ascending=False).head(5)
 ```
 
     Sum of NULL values in each column. 
-    
-
-
-
-
     Medal     231333
     Weight       217
     Height        99
@@ -607,11 +592,6 @@ nullSum.sort_values(ascending=False).head(5)
 ```
 
     Sum of NULL values in each column. 
-    
-
-
-
-
     Medal    231333
     ID            0
     Name          0
@@ -661,6 +641,7 @@ olympicDataISO=olympicDataISO[olympicDataISO.Season=='Summer']
 ```
 
 ---
+<br>
 # Queries
 
 # Age Distribution of Participants
