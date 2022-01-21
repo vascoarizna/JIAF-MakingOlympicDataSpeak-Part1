@@ -641,7 +641,8 @@ olympicDataISO=olympicDataISO[olympicDataISO.Season=='Summer']
 ```
 
 ---
-<br>
+
+
 # Queries
 
 # Age Distribution of Participants
@@ -896,6 +897,7 @@ His work was part of the sculpture event in the art competition at the 1928 Summ
 <i>(extracted from: https://en.wikipedia.org/wiki/John_Quincy_Adams_Ward)</i>
 
 
+<br>
 
 ## Age Distribution in the Olympic History
 
