@@ -642,8 +642,10 @@ olympicDataISO=olympicDataISO[olympicDataISO.Season=='Summer']
 
 ---
 
+<br>
 
 # Queries
+
 
 # Age Distribution of Participants
 
@@ -746,6 +748,8 @@ totalAgeDistribution.tail(5)
 
 It's interesting to see the youngest and oldest Olympians.
 
+
+
 ## Youngest Olympic
 
 
@@ -820,6 +824,8 @@ Dimitrios Loundras (6 September 1885 – 15 February 1970) was a Greek gymnast a
 Loundras competed in the team beams event. In that competition, Loundras was a member of the Ethnikos Gymnastikos Syllogos team that placed sixty-ninth of the sixty teams in the event, giving him a bronze medal. At 10 years 218 days he remains the youngest medalist and competitor in Olympic history.
 
 <i>(extracted from: https://en.wikipedia.org/wiki/Dimitrios_Loundras)</i>
+
+
 
 ## Oldest Olympian
 
@@ -1087,6 +1093,8 @@ plt.show()
 ![png](genericExploration_files/genericExploration_66_0.png)
     
 
+<br>
+
 
 # Gender equality over the Olympic Games
 
@@ -1175,8 +1183,10 @@ plt.show()
 ![png](genericExploration_files/genericExploration_70_0.png)
     
 
+<br>
 
-# Women medals per edition(Summer Season) of the Games
+
+# Women medals per edition of the Games
 
 
 ```python
@@ -1269,6 +1279,9 @@ plt.show()
     
 
 
+<br>
+
+
 # Top 10 Gold Medal Countries
 
 
@@ -1356,6 +1369,9 @@ plt.show()
     
 ![png](genericExploration_files/genericExploration_76_0.png)
     
+
+
+<br>
 
 
 # Disciplines with the greatest number of Gold Medals
@@ -1446,6 +1462,9 @@ plt.show()
     
 ![png](genericExploration_files/genericExploration_79_0.png)
     
+
+
+<br>
 
 
 # Height vs Weight of Olympic Gold Medalists
@@ -1557,6 +1576,9 @@ plt.show()
     
 
 
+<br>
+
+
 # Variation of Age for Female Athletes over time
 
 
@@ -1649,6 +1671,9 @@ plt.show()
     
 ![png](genericExploration_files/genericExploration_87_0.png)
     
+
+
+<br>
 
 
 # Variation of Weight for Male Athletes over time
@@ -1747,6 +1772,9 @@ plt.show()
     
 
 
+<br>
+
+
 # Variation of Weight for Female Athletes over time
 select min(Weight),mean(Weight), max(Weight), Year from athlete_events_final_vik where Sex = 'F' and Year > 1925 group by Year order by Year asc; 
 
@@ -1842,6 +1870,9 @@ plt.show()
     
 
 
+<br>
+
+
 # Variation of Height for Male Athletes over time
 select min(Height),mean(Height), max(Height), Year from athlete_events_final_vik where Sex = 'M' group by Year order by Year asc; 
 
@@ -1935,6 +1966,9 @@ plt.show()
     
 ![png](genericExploration_files/genericExploration_96_0.png)
     
+
+
+<br>
 
 
 # Variation of Height for Female Athletes over time
@@ -2033,6 +2067,9 @@ plt.show()
     
 
 
+<br>
+
+
 # Weight over year for Male Gymnasts
 select min(Weight),mean(Weight), max(Weight), Year from athlete_events_final_vik where Sport = 'Gymnastics' and Sex = 'M' and Year > 1950 group by Year order by Year;
 
@@ -2127,6 +2164,9 @@ plt.show()
     
 ![png](genericExploration_files/genericExploration_102_0.png)
     
+
+
+<br>
 
 
 # Weight over year for Female Gymnasts
@@ -2225,6 +2265,9 @@ plt.show()
     
 
 
+<br>
+
+
 # Height over year for Male Lifters
 select min(Height),mean(Height), max(Height), Year from athlete_events_final_vik where Sport = 'Weightlifting' and Sex = 'M' and Year > 1950 group by Year order by Year;
 
@@ -2321,6 +2364,9 @@ plt.show()
     
 
 
+<br>
+
+
 # Height over year for Female Lifters
 select min(Height),mean(Height), max(Height), Year from athlete_events_final_vik where Sport = 'Weightlifting' and Sex = 'F' and Year > 1950 group by Year order by Year;
 
@@ -2415,6 +2461,9 @@ plt.show()
     
 ![png](genericExploration_files/genericExploration_111_0.png)
     
+
+
+<br>
 
 
 # World Maps
