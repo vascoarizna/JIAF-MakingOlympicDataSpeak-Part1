@@ -1,28 +1,29 @@
-# Olympic Data: Making Olympic Data Speak
-In this report, we will analize a dataset that contains the information of all the athletes who competed from Athens 1896 to Rio 2016.
+# MAKING OLYMPIC DATA SPEAK: A Generic Exploration
+<i>Did you know that the youngest Olympian ever was 10 years old when he participated, and even won a medal? (also being the youngest Olympic medalist). Or, did you know that Art Competition or Tug-of-War were Olympic sports?
+Take a look into this Report, you won't regret.</i>
 
-The original dataset is able in: https://www.kaggle.com/heesoo37/120-years-of-olympic-history-athletes-and-results, and this report is based on the SQL-Databricks report found in: https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/5285432114503862/1710600426655738/7436006275420546/latest.html
 
-In this case we will make general questions, and try to get some interesting information. In the next release, we will dig into sports' specific questions.
+In this first Olympic Data Report, we will analyze a dataset that contains the information of all the athletes who competed from Athens 1896 to Rio 2016.
+
+The idea will be to have a rough idea of the data we have, and we will make general questions, in order to try to get some interesting information. In the next releases, we will dig into sports' specific questions and insights.
+
+In this case, the approach will be mainly looking at some data, avoiding showing code as much as possible. If you want to dig into the coding, the full report with all the python codes is available here: GitHub - VascoArizna
+
+In the last report, Analyzing the Employees's Turnover, we paid attention to the three main aspects of Data Science: Descriptive, Predictive, and Prescriptive Analysis. In this case, we will only pay attention to the first one. We will try to ask us questions in order to find 'highsights'. Let's start de Exploration to see if we are able to find any curious data.
 
 
 ```python
-###CODE###
-
 #We import the main libraries.
+
+
 import pandas as pd
 import numpy as np
 import math
-from ipywidgets import interact, interactive, fixed, interact_manual
-import ipywidgets as widgets
 
 #Libraries for plotting
 import seaborn as sns
-import pandas_alive
 import matplotlib.pyplot as plt
-# set a grey background (use sns.set_theme() if seaborn version 0.11.0 or above) 
-sns.set(style="darkgrid")
-import plotly.figure_factory as ff
+sns.set()
 import cufflinks as cf
 cf.go_offline()
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
@@ -30,12 +31,9 @@ init_notebook_mode(connected=True)
 import plotly.graph_objects as go
 import plotly.express as px
 from matplotlib import animation, rc
-from gapminder import gapminder
 pd.options.mode.chained_assignment = None  # default='warn'
 
 #This is to show the graphics and videos.
-from IPython.display import display, clear_output, HTML, Image
-from numpngw import AnimatedPNGWriter
 plt.rcParams['animation.ffmpeg_path'] = r'C:\Users\ignac\AppData\Local\ffmpeg\bin\ffmpeg.exe'
 
 #This is for the race bar-chart
@@ -44,23 +42,49 @@ import bar_chart_race as bcr
 #We set the Warning Parameter
 import warnings
 warnings.filterwarnings('ignore')
-
-import pandas as pd
-import numpy as np
-import math
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-#import statsmodels.formula.api as sm
-from pandas.plotting import scatter_matrix
-
 ```
+
+
+<script type="text/javascript">
+window.PlotlyConfig = {MathJaxConfig: 'local'};
+if (window.MathJax) {MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}
+if (typeof require !== 'undefined') {
+require.undef("plotly");
+requirejs.config({
+    paths: {
+        'plotly': ['https://cdn.plot.ly/plotly-2.8.3.min']
+    }
+});
+require(['plotly'], function(Plotly) {
+    window._Plotly = Plotly;
+});
+}
+</script>
+
+
+
+
+<script type="text/javascript">
+window.PlotlyConfig = {MathJaxConfig: 'local'};
+if (window.MathJax) {MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}
+if (typeof require !== 'undefined') {
+require.undef("plotly");
+requirejs.config({
+    paths: {
+        'plotly': ['https://cdn.plot.ly/plotly-2.8.3.min']
+    }
+});
+require(['plotly'], function(Plotly) {
+    window._Plotly = Plotly;
+});
+}
+</script>
 
 
 
 
 ```python
-url='https://raw.githubusercontent.com/vascoarizna/JIAF-OlympicAnalysis/main/dataset/athlete_events.csv'
+url='https://raw.githubusercontent.com/vascoarizna/JIAF-MakingOlympicDataSpeak-Part1/main/dataset/athlete_events.csv'
 
 #path1='dataset/athlete_events.csv'
 olympicData=pd.read_csv(url)
@@ -80,7 +104,19 @@ olympicData.head(3)
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -163,6 +199,16 @@ olympicData.head(3)
 
 
 
+The data is composed in this structure. By paying attention to the columns, we can see how can we group the data, to make aggregated procedures. On the other hand, by paying attention to the type of value, what kind of operations we will have to do, or what type of Feature Engineering we will have to apply.
+
+For example, we know that the last column, 'Medal', has three possible values:
+- NaN (no medal won)
+- Bronze (if the athlete won any bronze medal in that specific event in that specific sport in that Game)
+- Silver (following the same logic described above)
+- Gold (idem)
+
+Also, in this first report, we will pay attention only to Summer Olympic Games. Having this said, we will filter by 'Season' features: 'Summer' will be the value we will choose, to filter the 'Winter' Olympic Games.
+
 ## 1.2.Shape of the DataFrame
 
 
@@ -178,7 +224,8 @@ olympicData.shape
 
 
 
-We have 271116 rows and 15 columns
+- We have 271116 rows and 15 columns
+- This is fantastic. Between all the Games (Summer and Winter), we are talking about 271116 participants from 1896 to 2016.
 
 ## 1.3.Info of the DataFrame
 
@@ -211,9 +258,9 @@ olympicData.info()
     memory usage: 31.0+ MB
     
 
-We see that the columns have their correspondat data type: ID, Age, height, weight and Year are numerical (integers and floats), and the rest are objects, which makes sense.
+We see that the columns have their correspondent data type: ID, Age, height, weight and Year are numerical (integers and floats), and the rest are objects, which makes sense.
 
-
+Also, we already identified some null values in Age, Height, Weight, and Medal. We will treat these values.
 
 ## 1.4.Statistical Description of the DataFrame
 
@@ -226,7 +273,19 @@ olympicData.describe()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -309,9 +368,20 @@ olympicData.describe()
 
 
 
+Ok. This is the first hindsight we find. The minimum registered Age in an Olympic Games is 10 years!. And the maximum is 97!
+
+Regarding Age, we can see that the mean and the median (50%) are almost similar. This talks about a normal-like distribution. On top of that, despite we having a distance of 87 years between the minimum and maximum registered ages, we can appreciate that between the 25th and 75 percentiles (the 50 central percent of the data) we have only 7 years of distance.
+
+Analyzing Height and Weight, from a general point of view, is almost useless, as we have to analyze them inside each sport, and in most cases, inside the respective events. 
+
+
 # 2.Data Preparation/Cleaning
 
 ## 2.1.Missing Values
+
+We are quickly checking for null values. It's understandable that some values from the 'old days' are not available. Nevertheless, if we would like to apply any Machine Learning model to predict any value, we would have to deal with the nulls by, either imputing a value (the mean for the numerical values, and the median for the categorical ones) or dropping the row.
+
+The columns where we find nulls are these ones:
 
 
 ```python
@@ -331,23 +401,13 @@ olympicData.isnull().any().sort_values(ascending=False).head(5)
 
 
 
+The ratio of missing values is important for all the cases, except for Age:
+
 
 ```python
 #checking for null values
-print("Sum of NULL values in each column. ")
 nullSum=(olympicData).isnull().sum()
-nullSum.sort_values(ascending=False).head(5)
 ```
-
-    Sum of NULL values in each column. 
-    Medal     231333
-    Weight     62875
-    Height     60171
-    Age         9474
-    ID             0
-    dtype: int64
-
-
 
 
 ```python
@@ -368,10 +428,26 @@ ratio.sort_values(ascending=False).head(5)
 
 
 Missing Data Summary:
+
 - Age: 3.5% of the data has the age missing
 - Height: 22.1% of the data has the Height Missing
 - Weigh: 23.1% of the values are missing
-- Medal: 85.3% of the values are missing
+- Medal: 85.3% of the values are missing. This value, however, makes sense, as most of the athletes do not win a medal.
+
+
+As we said, for ML purposes, we should impute values or drop the rows. Each column should be treated in a different way:
+
+For the case of Age, Height, and Weight, the data imputation (mean, in this case) should be of the athlete's event average, rather than from the DataFrame's total average. Why? Because usually, for the same events (for example: in Boxing, the event/category up to 75kg) the athletes tend to have a similar body structure (weight/height).
+
+## 2.3. Label Encoding
+In the case of the medals, although there is no reference, we assume that all the NaNs (NULL values) correspond to athletes who never who any medal. That is why we should LabelEncode this category into:
+
+- 0 for NaN
+- 1 for Bronze
+- 2 for Silver
+- 3 for Gold.
+
+This way we would, not only get rid of the NULL values but also will have our dataset already prepare for Fitting it into an ML Model.
 
 
 ```python
@@ -388,19 +464,6 @@ olympicData.groupby('Medal').ID.count()
     Name: ID, dtype: int64
 
 
-
-For ML purposes we should impute values or drop the rows.
-Each column should be treated in a different way:
-- For the case of Age, Height and Weight, the data imputation (mean, in this case) should be of the athlete's sports+event average, rather than from the DataFrame's total average. Why? Because usually, for the same events (for example: Inside the Sports Boxing, the event/category up to 75kg) the atheltes tend to have the same body structure.
-
-In the case of the medals, althought there is no reference, we asumme that all the NaNs correspond to athletes who never who any medal.
-That is why, we should LabelEncode these category into:
-- 0 for NaN
-- 1 for Bronze
-- 2 for Silver
-- 3 for Gold.
-
-This way we would, not only get rid of the NULL values, but also we will have our dataset already prepare for Fitting it into a ML Model.
 
 ### 2.2.1. Medal Imputation/Label Encoder
 
@@ -463,6 +526,11 @@ nullSum.sort_values(ascending=False).head(5)
 ```
 
     Sum of NULL values in each column. 
+    
+
+
+
+
     Age1       261784
     Medal      231333
     Height1    213028
@@ -547,6 +615,11 @@ nullSum.sort_values(ascending=False).head(5)
 ```
 
     Sum of NULL values in each column. 
+    
+
+
+
+
     Medal     231333
     Weight       217
     Height        99
@@ -592,6 +665,11 @@ nullSum.sort_values(ascending=False).head(5)
 ```
 
     Sum of NULL values in each column. 
+    
+
+
+
+
     Medal    231333
     ID            0
     Name          0
@@ -601,8 +679,8 @@ nullSum.sort_values(ascending=False).head(5)
 
 
 
-## ISO Codes
-The NOC codes not compatiable to ISO 3166-1 alpha-3 standard. And the ISO codes are the one we must use for interactive plotting purposes.
+## 2.4. ISO Codes
+The NOC codes are not compatible with ISO 3166-1 alpha-3 standard. And the ISO codes are the ones we must use for interactive plotting purposes. Also, we add the continents into the dataset.
 
 
 ```python
@@ -612,7 +690,7 @@ olympicDataISO =(olympicData.merge(codeMapping, left_on='NOC', right_on='IOC'))
 olympicDataISO.drop(columns=['index','IOC'],inplace=True)
 ```
 
-## Continent Codes
+## 2.5. Continent Codes
 
 
 ```python
@@ -632,7 +710,7 @@ olympicDataISO.drop(columns=['index','name','alpha-2','alpha-3','country-code','
 olympicDataISO.rename(columns={'region':'Continent'},inplace=True)
 ```
 
-## Season Filtering
+## 2.6. Season Filtering
 In this report we will only analyzing Summer Games
 
 
@@ -641,13 +719,9 @@ olympicDataISO=olympicDataISO[olympicDataISO.Season=='Summer']
 ```
 
 ---
+# 3. QUERIES
 
-<br>
-
-# Queries
-
-
-# Age Distribution of Participants
+# 3.1 Age Distribution of Participants
 
 
 ```python
@@ -659,7 +733,19 @@ totalAgeDistribution.head(5)
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -698,6 +784,8 @@ totalAgeDistribution.head(5)
 
 
 
+Here we have the top 5 youngest Olympian athletes 
+
 
 ```python
 totalAgeDistribution.tail(5)
@@ -707,7 +795,19 @@ totalAgeDistribution.tail(5)
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -746,11 +846,13 @@ totalAgeDistribution.tail(5)
 
 
 
-It's interesting to see the youngest and oldest Olympians.
+In this case, we have the top 5 oldest Olympians.
 
+Taking a look into the head (5 first rows) and the tail (5 last tails) of the Age (ordered numerically in ascending direction), we can see the maximums and the minimums.
 
+It's interesting to see the youngest and oldest Olympians. But, now, what is even more interesting, is that the youngest athlete to participate in any Olympic Games also won a medal.
 
-## Youngest Olympic
+### 3.1.1 Youngest Olympic
 
 
 ```python
@@ -762,7 +864,19 @@ olympicDataISO[olympicDataISO.Age==totalAgeDistribution.reset_index().Age.min()]
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -825,9 +939,7 @@ Loundras competed in the team beams event. In that competition, Loundras was a m
 
 <i>(extracted from: https://en.wikipedia.org/wiki/Dimitrios_Loundras)</i>
 
-
-
-## Oldest Olympian
+### 3.1.2 Oldest Olympian
 
 
 ```python
@@ -839,7 +951,19 @@ olympicDataISO[olympicDataISO.Age==totalAgeDistribution.reset_index().Age.max()]
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -902,10 +1026,11 @@ His work was part of the sculpture event in the art competition at the 1928 Summ
 
 <i>(extracted from: https://en.wikipedia.org/wiki/John_Quincy_Adams_Ward)</i>
 
+This is very curious. John Quincy Adams Ward participated in the 1928 Olympics post-mortem. So, his art participated but not him personally.
 
-<br>
+This is another interesting fact that we will explode later: the sport where the oldest Olympian participated in was Art Competitions.
 
-## Age Distribution in the Olympic History
+### 3.1.3 Age Distribution in the Olympic History
 
 
 ```python
@@ -915,9 +1040,11 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_59_0.png)
+![png](genericExploration_files/genericExploration_64_0.png)
     
 
+
+This graphic goes in line with our estimation from the statistics in Point 1.4. Most of the Olympians are between 21 and 29 years old.
 
 
 ```python
@@ -929,7 +1056,19 @@ totalAgeDistributionGold
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -993,11 +1132,14 @@ totalAgeDistributionGold
 
 
 
-## Gold Medalist Age Distribution in the Olympic History
+Here we can see how old were the oldest Olympians to win a Gold medal, and how young were the youngest to also get the maximum reward.
+
+### 3.1.4 Gold Medalist Age Distribution in the Olympic History
 
 
 ```python
 sns.histplot(data=totalAgeDistributionGold, x="Age", kde=True)
+plt.show()
 ```
 
 
@@ -1009,16 +1151,16 @@ sns.histplot(data=totalAgeDistributionGold, x="Age", kde=True)
 
 
     
-![png](genericExploration_files/genericExploration_62_1.png)
+![png](genericExploration_files/genericExploration_69_1.png)
     
 
 
-# Gold Medals for Athletes Over 50 based on Sports
+We can see that the Gold Medalist's Age concentration is mainly between 19 and 26 years.
+
+### 3.1.5 Gold Medals for Athletes Over 50 based on Sports
 
 
-
-
-Select count(Sport),Sport from athlete_events_final_vik where Age > 50 and Medal='Gold' group by Sport
+Let's see in which sports Olympians older than 50 years got Gold Medals.
 
 
 ```python
@@ -1030,7 +1172,19 @@ goldMedalistOver50
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1090,13 +1244,275 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_66_0.png)
+![png](genericExploration_files/genericExploration_74_0.png)
     
 
-<br>
+
+Equestrian is the sport that most has Over-50-yo-Gold-Medals. Followed by Archery, Sailling and Shooting.
+
+## 3.2 Sports in the Olympic Games statistics
+According to the statistics obtained from the dataset, there are 52 different Sports that, at least once, were disputed at the Games. These 52 Sports were composed of 651 different Events.
+
+Some interesting sports we find in the list are
+
+- Aeronautics
+- Lacrosse
+- Motorboating
+- Polo
+- Roque
+- Art Competitions
+- Tug-Of-War
+
+### 3.2.1 How many times each sport make it in the Olympics?
 
 
-# Gender equality over the Olympic Games
+```python
+olympicDataISO[olympicDataISO.Season=='Summer'].groupby(['Sport'])[['Games']].nunique().sort_values('Games')
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Games</th>
+    </tr>
+    <tr>
+      <th>Sport</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Aeronautics</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Rugby Sevens</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Roque</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Racquets</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Motorboating</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Ice Hockey</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Croquet</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Cricket</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Jeu De Paume</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Basque Pelota</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Alpinism</th>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>Figure Skating</th>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>Lacrosse</th>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>Golf</th>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>Softball</th>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>Rugby</th>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>Polo</th>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>Triathlon</th>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>Trampolining</th>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>Baseball</th>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>Taekwondo</th>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>Tug-Of-War</th>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>Beach Volleyball</th>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>Badminton</th>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>Art Competitions</th>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>Table Tennis</th>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>Rhythmic Gymnastics</th>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>Synchronized Swimming</th>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>Judo</th>
+      <td>13</td>
+    </tr>
+    <tr>
+      <th>Handball</th>
+      <td>13</td>
+    </tr>
+    <tr>
+      <th>Volleyball</th>
+      <td>14</td>
+    </tr>
+    <tr>
+      <th>Archery</th>
+      <td>16</td>
+    </tr>
+    <tr>
+      <th>Tennis</th>
+      <td>16</td>
+    </tr>
+    <tr>
+      <th>Canoeing</th>
+      <td>19</td>
+    </tr>
+    <tr>
+      <th>Basketball</th>
+      <td>19</td>
+    </tr>
+    <tr>
+      <th>Hockey</th>
+      <td>23</td>
+    </tr>
+    <tr>
+      <th>Modern Pentathlon</th>
+      <td>24</td>
+    </tr>
+    <tr>
+      <th>Boxing</th>
+      <td>25</td>
+    </tr>
+    <tr>
+      <th>Equestrianism</th>
+      <td>25</td>
+    </tr>
+    <tr>
+      <th>Sailing</th>
+      <td>26</td>
+    </tr>
+    <tr>
+      <th>Weightlifting</th>
+      <td>26</td>
+    </tr>
+    <tr>
+      <th>Shooting</th>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>Football</th>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>Water Polo</th>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>Diving</th>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>Rowing</th>
+      <td>28</td>
+    </tr>
+    <tr>
+      <th>Wrestling</th>
+      <td>28</td>
+    </tr>
+    <tr>
+      <th>Swimming</th>
+      <td>29</td>
+    </tr>
+    <tr>
+      <th>Fencing</th>
+      <td>29</td>
+    </tr>
+    <tr>
+      <th>Cycling</th>
+      <td>29</td>
+    </tr>
+    <tr>
+      <th>Athletics</th>
+      <td>29</td>
+    </tr>
+    <tr>
+      <th>Gymnastics</th>
+      <td>29</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+## 3.3 Gender equality over the Olympic Games
+
+Let's now analyze a critical point where the IOC is paying special attention and it's the Gender Equality in Sports.
 
 
 ```python
@@ -1109,7 +1525,19 @@ gendercount.head(5)
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1156,6 +1584,8 @@ gendercount.head(5)
 
 
 
+As we see, in the first Games, no women participated. They started participating in 1900, but in small numbers.
+
 
 ```python
 plt.figure(figsize=(12,6))
@@ -1166,9 +1596,11 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_69_0.png)
+![png](genericExploration_files/genericExploration_83_0.png)
     
 
+
+Through the year, women's participation has increased, reaching Olympians' gender balance at the 2020 Tokyo Olympic Games.
 
 
 ```python
@@ -1180,13 +1612,19 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_70_0.png)
+![png](genericExploration_files/genericExploration_85_0.png)
     
 
-<br>
+
+Same graphic as above, but instead of bars, this is a line plot. Here is easier to see the two things:
+
+- The gap between the number of men and women athletes through the history of the Olympic Games.
+- The increasing tendency of athletes number through the Games.
 
 
-# Women medals per edition of the Games
+### 3.3.1 Medals per Gender per edition of the Games
+
+The idea here will be to analyze the number of medals awarded to both genders through the Games' history. 
 
 
 ```python
@@ -1198,7 +1636,19 @@ medalsPerGenderOverYears.head(10)
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1275,14 +1725,21 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_73_0.png)
+![png](genericExploration_files/genericExploration_90_0.png)
     
 
 
-<br>
+The biggest difference in the medals distribution per gender is found in the 1920 Antwerp Olympic Games (except the 1896 Athen Olympic Games where no women participated).
 
+The gap will be nulled once the gender balance in events is found (without a necessary gender balance in terms of the number of athletes). 
 
-# Top 10 Gold Medal Countries
+Further analysis at 2020 Tokyo Olympic Games statistics must be done to conclude if the tendency of gender balance in the number of athletes and number of events was reached.
+
+## 3.4 Top 10 Gold Medal Countries
+
+Let's analyze the Top 10 Gold Medal Countries.
+
+* Note: in this dataset, we are analyzing gross medals. This means The Men's Basketball event awards 1 Gold, 1 Silver, and 1 Bronze medal. For computing in the regular NOC's statistics, the NOC who wins the final will be computed with 1 Gold medal. However, in this dataset, we count how many athletes got a Gold medal. Having this said, and following the logic above described: here we will be counting 12 Gold Medals (the number of athletes a NOC Basketball team will have). That is why we call it 'gross count'.
 
 
 ```python
@@ -1295,7 +1752,19 @@ top10
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1367,14 +1836,13 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_76_0.png)
+![png](genericExploration_files/genericExploration_95_0.png)
     
 
 
-<br>
+The difference shown by the USA against the rest of the NOCs is huge.
 
-
-# Disciplines with the greatest number of Gold Medals
+## 3.5 Disciplines with the greatest number of Gold Medals
 
 
 ```python
@@ -1387,7 +1855,19 @@ topDisciplines
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1446,6 +1926,10 @@ topDisciplines
 
 
 
+As we can see, the Top 10 of sports that more medals award, are team sports. These numbers make sense, as we are doing a gross count.
+
+It's interesting to notice that the first women's sport it's in the 7th position on the top list. And, from the Top 10, we only have two women's sports in total. 
+
 
 ```python
 plt.figure(figsize=(12,6))
@@ -1460,14 +1944,190 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_79_0.png)
+![png](genericExploration_files/genericExploration_100_0.png)
     
 
 
-<br>
+For example, for understanding the difference in the number of medals awarded in with Event of Hockey (Men and Women), we need to contextualize how long these sports have been part of the Olympic Program:
 
 
-# Height vs Weight of Olympic Gold Medalists
+```python
+theMostEvents=olympicDataISO[(olympicDataISO.Season=='Summer')].groupby(['Event'])[['Games']].nunique().sort_values('Games',ascending=False)
+theMostEvent=theMostEvents.reset_index()
+quantityOfGames=theMostEvent[theMostEvent.Event.isin(topDisciplines.reset_index().Event)]
+quantityOfGames
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Event</th>
+      <th>Games</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>17</th>
+      <td>Water Polo Men's Water Polo</td>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>Gymnastics Men's Team All-Around</td>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>Football Men's Football</td>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>Rowing Men's Coxed Eights</td>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>Swimming Men's 4 x 200 metres Freestyle Relay</td>
+      <td>25</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>Fencing Men's epee, Team</td>
+      <td>25</td>
+    </tr>
+    <tr>
+      <th>58</th>
+      <td>Swimming Women's 4 x 100 metres Freestyle Relay</td>
+      <td>24</td>
+    </tr>
+    <tr>
+      <th>76</th>
+      <td>Hockey Men's Hockey</td>
+      <td>23</td>
+    </tr>
+    <tr>
+      <th>95</th>
+      <td>Basketball Men's Basketball</td>
+      <td>19</td>
+    </tr>
+    <tr>
+      <th>195</th>
+      <td>Hockey Women's Hockey</td>
+      <td>10</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+If we compare Men and Women's Hockey, we see Men's Hockey was part of the Olympic Program 23 times, while the Women's Event was only part 10 times.
+
+Also, when comparing across sports, we would need to create a ratio, and do not compare absolute values, as each sport have their own rules in terms of team cap.
+
+
+```python
+theCount=olympicDataISO[(olympicDataISO.Season=='Summer') & (olympicDataISO.Event.isin(topDisciplines.reset_index().Event))].groupby(['Event','Year','NOC'])[['ID']].count()
+theCount.reset_index().groupby('Event')[['ID']].mean()
+```
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ID</th>
+    </tr>
+    <tr>
+      <th>Event</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Basketball Men's Basketball</th>
+      <td>11.756000</td>
+    </tr>
+    <tr>
+      <th>Fencing Men's epee, Team</th>
+      <td>4.772455</td>
+    </tr>
+    <tr>
+      <th>Football Men's Football</th>
+      <td>14.851541</td>
+    </tr>
+    <tr>
+      <th>Gymnastics Men's Team All-Around</th>
+      <td>7.973978</td>
+    </tr>
+    <tr>
+      <th>Hockey Men's Hockey</th>
+      <td>15.524000</td>
+    </tr>
+    <tr>
+      <th>Hockey Women's Hockey</th>
+      <td>15.855556</td>
+    </tr>
+    <tr>
+      <th>Rowing Men's Coxed Eights</th>
+      <td>9.197425</td>
+    </tr>
+    <tr>
+      <th>Swimming Men's 4 x 200 metres Freestyle Relay</th>
+      <td>4.438272</td>
+    </tr>
+    <tr>
+      <th>Swimming Women's 4 x 100 metres Freestyle Relay</th>
+      <td>4.382022</td>
+    </tr>
+    <tr>
+      <th>Water Polo Men's Water Polo</th>
+      <td>10.603509</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+Here we have the average of team members (only athletes) each sport has in their respective Olympic history.
+
+The average stands because the sports change their respective IF rules from time to time. One of the rules is the number of athletes available to compete per Event, the number of athletes that can be in the field at the same time, the number of athletes per team, etc.
+
+On top of that, we have NOCs that sometimes do not make the total cap number, taking fewer athletes to the competition.
+
+## 3.6 Height vs Weight of Olympic Gold Medalists
+
+Let's analyze Height vs Weight of Men and Women Gold Medalists through history.
 
 
 ```python
@@ -1479,12 +2139,33 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_81_0.png)
+![png](genericExploration_files/genericExploration_108_0.png)
     
 
 
-# Variation of Age for Male Athletes over time
 
+```python
+olympicDataISO[(olympicDataISO.Season=='Summer')].Sex.value_counts()/olympicDataISO[(olympicDataISO.Season=='Summer')].shape[0]
+```
+
+
+    M    0.731465
+    F    0.268535
+    Name: Sex, dtype: float64
+
+
+Despite this graphic lack of contextualization, it's interesting to see this scatter plot. One thing we can clearly see is that women then to be smaller and lighter than men. However, we need to clarify something: in this dataset, for Summer Olympic Games, we have the information of 152724 men vs 56068 women. We are talking about the 73.14% vs 26.86%.
+
+Now, coming back to the 'lack of contextualization' idea: this is because we are comparing all the sports, and comparing them it's incorrect if you want to pay attention to the physiognomy. Why? Because combat sports (Boxing, Wrestling, Judo & Taekwondo), and Weightlifting are also weight-regulated sports. There is an internal classification where you compete only in a certain category. To meet the requirements of that category there is a natural body description. Having this said, these sports must be compared, not only against themselves but also only between the athletes inside each Event/Category.
+
+Different it's the sports of Time & Mark, where the only classification criteria are reaching the mark. Nevertheless, when you start paying attention to the statistics, you see a homogeneity across the values of the athletes inside a specific Event, even in a Time & Mark sport.
+
+In conclusion, to analyze in a deeper way body measures, you must compare only across athletes of the same Event.
+
+## 3.7 Variation of Age for Male Athletes over time
+
+
+Let's analyze the variation of the Men Olympian's Age across Olympic history.
 
 
 ```python
@@ -1497,7 +2178,19 @@ maleAgeVar.head()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1572,14 +2265,13 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_84_0.png)
+![png](genericExploration_files/genericExploration_114_0.png)
     
 
 
-<br>
+We can see that both the median (the middle value) and the mean (average) are quite constant over time. Also, we can see some great peaks around the 30s. As we read above, in the 1928 Los Angeles Olympic Games, for example, we registered the oldest Olympian, who participated in Art Competition. 
 
-
-# Variation of Age for Female Athletes over time
+## 3.8 Variation of Age for Female Athletes over time
 
 
 ```python
@@ -1592,7 +2284,19 @@ femaleAgeVar.head()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1669,14 +2373,17 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_87_0.png)
+![png](genericExploration_files/genericExploration_118_0.png)
     
 
 
-<br>
+For Women, we can see an increasing tendency in the average and median registered ages since the 1980 Moscow Olympic Games.
 
+## 3.9 Variation of Weight for Male Athletes over time
 
-# Variation of Weight for Male Athletes over time
+What about the weight? How this measure has fluctuated over time?
+
+* It's important to mention that, to take any substantial conclusion from this measure, we would have to divide by Events.
 
 
 ```python
@@ -1689,7 +2396,19 @@ maleWeightVar.head()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1768,15 +2487,13 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_90_0.png)
+![png](genericExploration_files/genericExploration_123_0.png)
     
 
 
-<br>
+We can see that both the median (the middle value) and the mean (average) are showing a slight increase over the last 20 years.
 
-
-# Variation of Weight for Female Athletes over time
-select min(Weight),mean(Weight), max(Weight), Year from athlete_events_final_vik where Sex = 'F' and Year > 1925 group by Year order by Year asc; 
+## 3.10 Variation of Weight for Female Athletes over time
 
 
 ```python
@@ -1789,7 +2506,19 @@ womenWeightVar.head()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1866,15 +2595,15 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_93_0.png)
+![png](genericExploration_files/genericExploration_127_0.png)
     
 
 
-<br>
+Same as Age, Women athletes are showing a slight increase in terms of mean and median in weight over the last 40 years.
 
+In a further study, this value would have to be compared with the number of women's events over time, and see if there is any correlation. In a rough analysis, we can say this would make sense.
 
-# Variation of Height for Male Athletes over time
-select min(Height),mean(Height), max(Height), Year from athlete_events_final_vik where Sex = 'M' group by Year order by Year asc; 
+## 3.11 Variation of Height for Male Athletes over time
 
 
 ```python
@@ -1887,7 +2616,19 @@ maleHeightVar.head()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -1964,15 +2705,15 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_96_0.png)
+![png](genericExploration_files/genericExploration_131_0.png)
     
 
 
-<br>
+We can see that both the median (the middle value) and the mean (average) show an increasing tendency over time.
 
+This could mean that the athletes' population is getting taller.
 
-# Variation of Height for Female Athletes over time
-select min(Height),mean(Height), max(Height), Year from athlete_events_final_vik where Sex = 'F' group by Year order by Year asc; 
+## 3.12 Variation of Height for Female Athletes over time
 
 
 ```python
@@ -1985,7 +2726,19 @@ womenHeightVar.head()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -2063,15 +2816,11 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_99_0.png)
+![png](genericExploration_files/genericExploration_135_0.png)
     
 
 
-<br>
-
-
-# Weight over year for Male Gymnasts
-select min(Weight),mean(Weight), max(Weight), Year from athlete_events_final_vik where Sport = 'Gymnastics' and Sex = 'M' and Year > 1950 group by Year order by Year;
+## 3.13 Weight over year for Male Gymnasts
 
 
 ```python
@@ -2084,7 +2833,19 @@ maleWeightGymVar.head()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -2162,15 +2923,13 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_102_0.png)
+![png](genericExploration_files/genericExploration_138_0.png)
     
 
 
-<br>
+We can see that both the median (the middle value) and the mean (average) are quite constant over time, despite the maximum and minimum weights aren't.
 
-
-# Weight over year for Female Gymnasts
-select min(Weight),mean(Weight), max(Weight), Year from athlete_events_final_vik where Sport = 'Gymnastics' and Sex = 'F' and Year > 1950 group by Year order by Year;
+## 3.14 Weight over year for Female Gymnasts
 
 
 ```python
@@ -2183,7 +2942,19 @@ femaleWeightGymVar.head()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -2261,15 +3032,17 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_105_0.png)
+![png](genericExploration_files/genericExploration_142_0.png)
     
 
 
-<br>
+These figures are pretty interesting. We see that there is huge volatility in the weight of women gymnastic athletes over time.
 
+## 3.15 Height over year for Male Lifters
 
-# Height over year for Male Lifters
-select min(Height),mean(Height), max(Height), Year from athlete_events_final_vik where Sport = 'Weightlifting' and Sex = 'M' and Year > 1950 group by Year order by Year;
+In the case of WeightLifting, makes no sense to analyze the weight in a generic way. This is because it must be contextualized inside each Event/Category, which, by the way, also changes through time, as IF Rules change.
+
+That is why it would be interesting analyzing the Height over the years.
 
 
 ```python
@@ -2282,7 +3055,19 @@ maleheightWLFVar.head()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -2360,15 +3145,16 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_108_0.png)
+![png](genericExploration_files/genericExploration_147_0.png)
     
 
 
-<br>
+It's interesting how the maximum height increased (we would need to analyze if this value is also correlated with an increase in the weight). Also, the mean and the median have U shapes.
 
+The wider range shown since the 1980 Moscow Olympic Games, might mean that the number of categories was expanded over time, and/or, the range of the categories was increased.
 
-# Height over year for Female Lifters
-select min(Height),mean(Height), max(Height), Year from athlete_events_final_vik where Sport = 'Weightlifting' and Sex = 'F' and Year > 1950 group by Year order by Year;
+## 3.16 Height over year for Female Lifters
+
 
 
 ```python
@@ -2381,7 +3167,19 @@ femaleheightWLFVar.head()
 
 
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -2459,14 +3257,17 @@ plt.show()
 
 
     
-![png](genericExploration_files/genericExploration_111_0.png)
+![png](genericExploration_files/genericExploration_151_0.png)
     
 
 
-<br>
+We can see that both the median (the middle value) and the mean (average) are quite constant over time.
 
+## 3.17 World Maps
 
-# World Maps
+Let's plot in world maps the medals distribution per color/type.
+
+* There are countries that are not even plotted. This is because they have never won that color/type of medal.
 
 
 ```python
@@ -2480,7 +3281,7 @@ medalsDF=medalsDF.reset_index()
 medalsDF=medalsDF.sort_values(['Gold','Silver','Bronze','Total'],ascending=False)
 ```
 
-# Gold Medals based on Countries
+### 3.17.1 Gold Medals based on Countries
 
 
 ```python
@@ -2526,10 +3327,36 @@ fig = dict(data=data, layout=layout)
 iplot(fig,validate=False)
 
 ```
-![43](genericExploration_files/43.png)
 
 
-# Silver Medals based on Countries
+<div>                            <div id="d83da5e5-7e5b-4378-b42f-aba9da5bc298" class="plotly-graph-div" style="height:600px; width:900px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("d83da5e5-7e5b-4378-b42f-aba9da5bc298")) {                    Plotly.newPlot(                        "d83da5e5-7e5b-4378-b42f-aba9da5bc298",                        [{"type":"choropleth","locations":["USA","GBR","DEU","ITA","FRA","HUN","SWE","AUS","CHN","RUS","NLD","JPN","NOR","DNK","KOR","CUB","ROU","CAN","DEU","FIN","IND","POL","ESP","BRA","CHE","BEL","ARG","NZL","GRC","HRV","BGR","UKR","PAK","TUR","JAM","KEN","ZAF","URY","MEX","AUT","NGA","ETH","CMR","KAZ","BLR","IRN","ZWE","PRK","SRB","CZE","BHS","SVK","FJI","IDN","IRL","EST","THA","UZB","GEO","AZE","TTO","EGY","SVN","LTU","MAR","COL","DZA","PRT","LUX","TWN","LVA","CHL","TUN","DOM","MNG","ARM","VEN","UGA","PER","SGP","VNM","PRI","HKG","ISR","HTI","CRI","TJK","BHR","CIV","SYR","BDI","ECU","GRD","PAN","MOZ","SUR","ARE","JOR"],"z":[2472,636,592,518,465,432,354,342,334,296,245,230,227,179,171,164,161,158,144,132,131,111,109,109,99,96,91,90,62,54,53,42,42,40,38,34,32,31,30,29,23,22,20,19,18,18,17,16,15,15,14,13,13,11,9,9,9,9,8,7,7,7,6,6,6,5,5,4,4,3,3,3,3,3,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"color_continuous_scale":["#0d0887","#46039f","#7201a8","#9c179e","#bd3786","#d8576b","#ed7953","#fb9f3a","#fdca26","#f0f921"],"text":["USA<br>Total Medals: 5002<br>Gold Medals: 2472<br>Silver Medals: 1333<br>Bronze Medals: 1197","GBR<br>Total Medals: 1985<br>Gold Medals: 636<br>Silver Medals: 729<br>Bronze Medals: 620","GER<br>Total Medals: 1779<br>Gold Medals: 592<br>Silver Medals: 538<br>Bronze Medals: 649","ITA<br>Total Medals: 1446<br>Gold Medals: 518<br>Silver Medals: 474<br>Bronze Medals: 454","FRA<br>Total Medals: 1627<br>Gold Medals: 465<br>Silver Medals: 575<br>Bronze Medals: 587","HUN<br>Total Medals: 1123<br>Gold Medals: 432<br>Silver Medals: 328<br>Bronze Medals: 363","SWE<br>Total Medals: 1108<br>Gold Medals: 354<br>Silver Medals: 396<br>Bronze Medals: 358","AUS<br>Total Medals: 1304<br>Gold Medals: 342<br>Silver Medals: 452<br>Bronze Medals: 510","CHN<br>Total Medals: 909<br>Gold Medals: 334<br>Silver Medals: 317<br>Bronze Medals: 258","RUS<br>Total Medals: 905<br>Gold Medals: 296<br>Silver Medals: 278<br>Bronze Medals: 331","NED<br>Total Medals: 918<br>Gold Medals: 245<br>Silver Medals: 302<br>Bronze Medals: 371","JPN<br>Total Medals: 850<br>Gold Medals: 230<br>Silver Medals: 287<br>Bronze Medals: 333","NOR<br>Total Medals: 590<br>Gold Medals: 227<br>Silver Medals: 196<br>Bronze Medals: 167","DEN<br>Total Medals: 592<br>Gold Medals: 179<br>Silver Medals: 236<br>Bronze Medals: 177","KOR<br>Total Medals: 552<br>Gold Medals: 171<br>Silver Medals: 206<br>Bronze Medals: 175","CUB<br>Total Medals: 409<br>Gold Medals: 164<br>Silver Medals: 129<br>Bronze Medals: 116","ROU<br>Total Medals: 651<br>Gold Medals: 161<br>Silver Medals: 200<br>Bronze Medals: 290","CAN<br>Total Medals: 741<br>Gold Medals: 158<br>Silver Medals: 239<br>Bronze Medals: 344","FRG<br>Total Medals: 504<br>Gold Medals: 144<br>Silver Medals: 172<br>Bronze Medals: 188","FIN<br>Total Medals: 474<br>Gold Medals: 132<br>Silver Medals: 125<br>Bronze Medals: 217","IND<br>Total Medals: 190<br>Gold Medals: 131<br>Silver Medals: 19<br>Bronze Medals: 40","POL<br>Total Medals: 538<br>Gold Medals: 111<br>Silver Medals: 185<br>Bronze Medals: 242","ESP<br>Total Medals: 487<br>Gold Medals: 109<br>Silver Medals: 243<br>Bronze Medals: 135","BRA<br>Total Medals: 475<br>Gold Medals: 109<br>Silver Medals: 175<br>Bronze Medals: 191","SUI<br>Total Medals: 416<br>Gold Medals: 99<br>Silver Medals: 178<br>Bronze Medals: 139","BEL<br>Total Medals: 455<br>Gold Medals: 96<br>Silver Medals: 193<br>Bronze Medals: 166","ARG<br>Total Medals: 274<br>Gold Medals: 91<br>Silver Medals: 92<br>Bronze Medals: 91","NZL<br>Total Medals: 227<br>Gold Medals: 90<br>Silver Medals: 55<br>Bronze Medals: 82","GRE<br>Total Medals: 255<br>Gold Medals: 62<br>Silver Medals: 109<br>Bronze Medals: 84","CRO<br>Total Medals: 138<br>Gold Medals: 54<br>Silver Medals: 48<br>Bronze Medals: 36","BUL<br>Total Medals: 336<br>Gold Medals: 53<br>Silver Medals: 142<br>Bronze Medals: 141","UKR<br>Total Medals: 188<br>Gold Medals: 42<br>Silver Medals: 51<br>Bronze Medals: 95","PAK<br>Total Medals: 121<br>Gold Medals: 42<br>Silver Medals: 45<br>Bronze Medals: 34","TUR<br>Total Medals: 95<br>Gold Medals: 40<br>Silver Medals: 27<br>Bronze Medals: 28","JAM<br>Total Medals: 157<br>Gold Medals: 38<br>Silver Medals: 75<br>Bronze Medals: 44","KEN<br>Total Medals: 106<br>Gold Medals: 34<br>Silver Medals: 41<br>Bronze Medals: 31","RSA<br>Total Medals: 131<br>Gold Medals: 32<br>Silver Medals: 47<br>Bronze Medals: 52","URU<br>Total Medals: 63<br>Gold Medals: 31<br>Silver Medals: 2<br>Bronze Medals: 30","MEX<br>Total Medals: 110<br>Gold Medals: 30<br>Silver Medals: 26<br>Bronze Medals: 54","AUT<br>Total Medals: 170<br>Gold Medals: 29<br>Silver Medals: 88<br>Bronze Medals: 53","NGR<br>Total Medals: 99<br>Gold Medals: 23<br>Silver Medals: 30<br>Bronze Medals: 46","ETH<br>Total Medals: 53<br>Gold Medals: 22<br>Silver Medals: 9<br>Bronze Medals: 22","CMR<br>Total Medals: 22<br>Gold Medals: 20<br>Silver Medals: 1<br>Bronze Medals: 1","KAZ<br>Total Medals: 70<br>Gold Medals: 19<br>Silver Medals: 22<br>Bronze Medals: 29","BLR<br>Total Medals: 124<br>Gold Medals: 18<br>Silver Medals: 40<br>Bronze Medals: 66","IRI<br>Total Medals: 68<br>Gold Medals: 18<br>Silver Medals: 21<br>Bronze Medals: 29","ZIM<br>Total Medals: 22<br>Gold Medals: 17<br>Silver Medals: 4<br>Bronze Medals: 1","PRK<br>Total Medals: 65<br>Gold Medals: 16<br>Silver Medals: 15<br>Bronze Medals: 34","SRB<br>Total Medals: 85<br>Gold Medals: 15<br>Silver Medals: 29<br>Bronze Medals: 41","CZE<br>Total Medals: 71<br>Gold Medals: 15<br>Silver Medals: 24<br>Bronze Medals: 32","BAH<br>Total Medals: 40<br>Gold Medals: 14<br>Silver Medals: 11<br>Bronze Medals: 15","SVK<br>Total Medals: 42<br>Gold Medals: 13<br>Silver Medals: 17<br>Bronze Medals: 12","FIJ<br>Total Medals: 13<br>Gold Medals: 13<br>Silver Medals: 0<br>Bronze Medals: 0","INA<br>Total Medals: 41<br>Gold Medals: 11<br>Silver Medals: 17<br>Bronze Medals: 13","IRL<br>Total Medals: 35<br>Gold Medals: 9<br>Silver Medals: 13<br>Bronze Medals: 13","EST<br>Total Medals: 43<br>Gold Medals: 9<br>Silver Medals: 10<br>Bronze Medals: 24","THA<br>Total Medals: 30<br>Gold Medals: 9<br>Silver Medals: 8<br>Bronze Medals: 13","UZB<br>Total Medals: 33<br>Gold Medals: 9<br>Silver Medals: 7<br>Bronze Medals: 17","GEO<br>Total Medals: 32<br>Gold Medals: 8<br>Silver Medals: 6<br>Bronze Medals: 18","AZE<br>Total Medals: 44<br>Gold Medals: 7<br>Silver Medals: 12<br>Bronze Medals: 25","TTO<br>Total Medals: 32<br>Gold Medals: 7<br>Silver Medals: 8<br>Bronze Medals: 17","EGY<br>Total Medals: 27<br>Gold Medals: 7<br>Silver Medals: 8<br>Bronze Medals: 12","SLO<br>Total Medals: 30<br>Gold Medals: 6<br>Silver Medals: 9<br>Bronze Medals: 15","LTU<br>Total Medals: 61<br>Gold Medals: 6<br>Silver Medals: 7<br>Bronze Medals: 48","MAR<br>Total Medals: 23<br>Gold Medals: 6<br>Silver Medals: 5<br>Bronze Medals: 12","COL<br>Total Medals: 28<br>Gold Medals: 5<br>Silver Medals: 9<br>Bronze Medals: 14","ALG<br>Total Medals: 17<br>Gold Medals: 5<br>Silver Medals: 4<br>Bronze Medals: 8","POR<br>Total Medals: 41<br>Gold Medals: 4<br>Silver Medals: 11<br>Bronze Medals: 26","LUX<br>Total Medals: 6<br>Gold Medals: 4<br>Silver Medals: 2<br>Bronze Medals: 0","TPE<br>Total Medals: 49<br>Gold Medals: 3<br>Silver Medals: 28<br>Bronze Medals: 18","LAT<br>Total Medals: 20<br>Gold Medals: 3<br>Silver Medals: 11<br>Bronze Medals: 6","CHI<br>Total Medals: 32<br>Gold Medals: 3<br>Silver Medals: 9<br>Bronze Medals: 20","TUN<br>Total Medals: 13<br>Gold Medals: 3<br>Silver Medals: 3<br>Bronze Medals: 7","DOM<br>Total Medals: 7<br>Gold Medals: 3<br>Silver Medals: 2<br>Bronze Medals: 2","MGL<br>Total Medals: 26<br>Gold Medals: 2<br>Silver Medals: 10<br>Bronze Medals: 14","ARM<br>Total Medals: 16<br>Gold Medals: 2<br>Silver Medals: 5<br>Bronze Medals: 9","VEN<br>Total Medals: 15<br>Gold Medals: 2<br>Silver Medals: 3<br>Bronze Medals: 10","UGA<br>Total Medals: 7<br>Gold Medals: 2<br>Silver Medals: 3<br>Bronze Medals: 2","PER<br>Total Medals: 15<br>Gold Medals: 1<br>Silver Medals: 14<br>Bronze Medals: 0","SGP<br>Total Medals: 9<br>Gold Medals: 1<br>Silver Medals: 4<br>Bronze Medals: 4","VIE<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 3<br>Bronze Medals: 0","PUR<br>Total Medals: 9<br>Gold Medals: 1<br>Silver Medals: 2<br>Bronze Medals: 6","HKG<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 2<br>Bronze Medals: 1","ISR<br>Total Medals: 9<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 7","HAI<br>Total Medals: 7<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 5","CRC<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 2","TJK<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 2","BRN<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 1","CIV<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 1","SYR<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 1","BDI<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 0","ECU<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 0","GRN<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 0","PAN<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 0<br>Bronze Medals: 2","MOZ<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 0<br>Bronze Medals: 1","SUR<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 0<br>Bronze Medals: 1","UAE<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 0<br>Bronze Medals: 1","JOR<br>Total Medals: 1<br>Gold Medals: 1<br>Silver Medals: 0<br>Bronze Medals: 0"],"hoverinfo":"text","reversescale":true,"colorscale":"Blues","marker":{"line":{"color":"rgb(180,180,180)","width":0.5}},"colorbar":{"autotick":false,"tickprefix":"","title":"Gold"}}],                        {"colorscale":"Blues","width":900,"height":600,"title":"GOLD Medallists' NOCs","geo":{"showframe":false,"showcoastlines":false,"projection":{"type":"Mercator"}}},                        {"responsive": true}                    ).then(function(){
+
+var gd = document.getElementById('d83da5e5-7e5b-4378-b42f-aba9da5bc298');
+var x = new MutationObserver(function (mutations, observer) {{
+        var display = window.getComputedStyle(gd).display;
+        if (!display || display === 'none') {{
+            console.log([gd, 'removed!']);
+            Plotly.purge(gd);
+            observer.disconnect();
+        }}
+}});
+
+// Listen for the removal of the full notebook cells
+var notebookContainer = gd.closest('#notebook-container');
+if (notebookContainer) {{
+    x.observe(notebookContainer, {childList: true});
+}}
+
+// Listen for the clearing of the current output cell
+var outputEl = gd.closest('.output');
+if (outputEl) {{
+    x.observe(outputEl, {childList: true});
+}}
+
+                        })                };                });            </script>        </div>
+
+
+### 3.17.2 Silver Medals based on Countries
 
 
 ```python
@@ -2576,10 +3403,35 @@ iplot(fig,validate=False)
 
 ```
 
-![44](genericExploration_files/44.png)
+
+<div>                            <div id="c6ec55f7-f7cf-42e9-98ed-69c9932e260e" class="plotly-graph-div" style="height:600px; width:900px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("c6ec55f7-f7cf-42e9-98ed-69c9932e260e")) {                    Plotly.newPlot(                        "c6ec55f7-f7cf-42e9-98ed-69c9932e260e",                        [{"type":"choropleth","locations":["USA","GBR","DEU","ITA","FRA","HUN","SWE","AUS","CHN","RUS","NLD","JPN","NOR","DNK","KOR","CUB","ROU","CAN","DEU","FIN","IND","POL","ESP","BRA","CHE","BEL","ARG","NZL","GRC","HRV","BGR","UKR","PAK","TUR","JAM","KEN","ZAF","URY","MEX","AUT","NGA","ETH","CMR","KAZ","BLR","IRN","ZWE","PRK","SRB","CZE","BHS","SVK","IDN","IRL","EST","THA","UZB","GEO","AZE","TTO","EGY","SVN","LTU","MAR","COL","DZA","PRT","LUX","TWN","LVA","CHL","TUN","DOM","MNG","ARM","VEN","UGA","PER","SGP","VNM","PRI","HKG","ISR","HTI","CRI","TJK","BHR","CIV","SYR","BDI","ECU","GRD","PRY","ISL","MNE","MYS","NAM","PHL","MDA","LBN","LKA","TZA","GHA","SAU","QAT","KGZ","NER","ZMB","BES","BWA","CYP","GAB","GTM","VIR","SEN","SDN","TON"],"z":[1333,729,538,474,575,328,396,452,317,278,302,287,196,236,206,129,200,239,172,125,19,185,243,175,178,193,92,55,109,48,142,51,45,27,75,41,47,2,26,88,30,9,1,22,40,21,4,15,29,24,11,17,17,13,10,8,7,6,12,8,8,9,7,5,9,4,11,2,28,11,9,3,2,10,5,3,3,14,4,3,2,2,1,1,1,1,1,1,1,1,1,1,17,15,14,11,4,3,3,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"color_continuous_scale":["#0d0887","#46039f","#7201a8","#9c179e","#bd3786","#d8576b","#ed7953","#fb9f3a","#fdca26","#f0f921"],"text":["USA<br>Total Medals: 5002<br>Gold Medals: 2472<br>Silver Medals: 1333<br>Bronze Medals: 1197","GBR<br>Total Medals: 1985<br>Gold Medals: 636<br>Silver Medals: 729<br>Bronze Medals: 620","GER<br>Total Medals: 1779<br>Gold Medals: 592<br>Silver Medals: 538<br>Bronze Medals: 649","ITA<br>Total Medals: 1446<br>Gold Medals: 518<br>Silver Medals: 474<br>Bronze Medals: 454","FRA<br>Total Medals: 1627<br>Gold Medals: 465<br>Silver Medals: 575<br>Bronze Medals: 587","HUN<br>Total Medals: 1123<br>Gold Medals: 432<br>Silver Medals: 328<br>Bronze Medals: 363","SWE<br>Total Medals: 1108<br>Gold Medals: 354<br>Silver Medals: 396<br>Bronze Medals: 358","AUS<br>Total Medals: 1304<br>Gold Medals: 342<br>Silver Medals: 452<br>Bronze Medals: 510","CHN<br>Total Medals: 909<br>Gold Medals: 334<br>Silver Medals: 317<br>Bronze Medals: 258","RUS<br>Total Medals: 905<br>Gold Medals: 296<br>Silver Medals: 278<br>Bronze Medals: 331","NED<br>Total Medals: 918<br>Gold Medals: 245<br>Silver Medals: 302<br>Bronze Medals: 371","JPN<br>Total Medals: 850<br>Gold Medals: 230<br>Silver Medals: 287<br>Bronze Medals: 333","NOR<br>Total Medals: 590<br>Gold Medals: 227<br>Silver Medals: 196<br>Bronze Medals: 167","DEN<br>Total Medals: 592<br>Gold Medals: 179<br>Silver Medals: 236<br>Bronze Medals: 177","KOR<br>Total Medals: 552<br>Gold Medals: 171<br>Silver Medals: 206<br>Bronze Medals: 175","CUB<br>Total Medals: 409<br>Gold Medals: 164<br>Silver Medals: 129<br>Bronze Medals: 116","ROU<br>Total Medals: 651<br>Gold Medals: 161<br>Silver Medals: 200<br>Bronze Medals: 290","CAN<br>Total Medals: 741<br>Gold Medals: 158<br>Silver Medals: 239<br>Bronze Medals: 344","FRG<br>Total Medals: 504<br>Gold Medals: 144<br>Silver Medals: 172<br>Bronze Medals: 188","FIN<br>Total Medals: 474<br>Gold Medals: 132<br>Silver Medals: 125<br>Bronze Medals: 217","IND<br>Total Medals: 190<br>Gold Medals: 131<br>Silver Medals: 19<br>Bronze Medals: 40","POL<br>Total Medals: 538<br>Gold Medals: 111<br>Silver Medals: 185<br>Bronze Medals: 242","ESP<br>Total Medals: 487<br>Gold Medals: 109<br>Silver Medals: 243<br>Bronze Medals: 135","BRA<br>Total Medals: 475<br>Gold Medals: 109<br>Silver Medals: 175<br>Bronze Medals: 191","SUI<br>Total Medals: 416<br>Gold Medals: 99<br>Silver Medals: 178<br>Bronze Medals: 139","BEL<br>Total Medals: 455<br>Gold Medals: 96<br>Silver Medals: 193<br>Bronze Medals: 166","ARG<br>Total Medals: 274<br>Gold Medals: 91<br>Silver Medals: 92<br>Bronze Medals: 91","NZL<br>Total Medals: 227<br>Gold Medals: 90<br>Silver Medals: 55<br>Bronze Medals: 82","GRE<br>Total Medals: 255<br>Gold Medals: 62<br>Silver Medals: 109<br>Bronze Medals: 84","CRO<br>Total Medals: 138<br>Gold Medals: 54<br>Silver Medals: 48<br>Bronze Medals: 36","BUL<br>Total Medals: 336<br>Gold Medals: 53<br>Silver Medals: 142<br>Bronze Medals: 141","UKR<br>Total Medals: 188<br>Gold Medals: 42<br>Silver Medals: 51<br>Bronze Medals: 95","PAK<br>Total Medals: 121<br>Gold Medals: 42<br>Silver Medals: 45<br>Bronze Medals: 34","TUR<br>Total Medals: 95<br>Gold Medals: 40<br>Silver Medals: 27<br>Bronze Medals: 28","JAM<br>Total Medals: 157<br>Gold Medals: 38<br>Silver Medals: 75<br>Bronze Medals: 44","KEN<br>Total Medals: 106<br>Gold Medals: 34<br>Silver Medals: 41<br>Bronze Medals: 31","RSA<br>Total Medals: 131<br>Gold Medals: 32<br>Silver Medals: 47<br>Bronze Medals: 52","URU<br>Total Medals: 63<br>Gold Medals: 31<br>Silver Medals: 2<br>Bronze Medals: 30","MEX<br>Total Medals: 110<br>Gold Medals: 30<br>Silver Medals: 26<br>Bronze Medals: 54","AUT<br>Total Medals: 170<br>Gold Medals: 29<br>Silver Medals: 88<br>Bronze Medals: 53","NGR<br>Total Medals: 99<br>Gold Medals: 23<br>Silver Medals: 30<br>Bronze Medals: 46","ETH<br>Total Medals: 53<br>Gold Medals: 22<br>Silver Medals: 9<br>Bronze Medals: 22","CMR<br>Total Medals: 22<br>Gold Medals: 20<br>Silver Medals: 1<br>Bronze Medals: 1","KAZ<br>Total Medals: 70<br>Gold Medals: 19<br>Silver Medals: 22<br>Bronze Medals: 29","BLR<br>Total Medals: 124<br>Gold Medals: 18<br>Silver Medals: 40<br>Bronze Medals: 66","IRI<br>Total Medals: 68<br>Gold Medals: 18<br>Silver Medals: 21<br>Bronze Medals: 29","ZIM<br>Total Medals: 22<br>Gold Medals: 17<br>Silver Medals: 4<br>Bronze Medals: 1","PRK<br>Total Medals: 65<br>Gold Medals: 16<br>Silver Medals: 15<br>Bronze Medals: 34","SRB<br>Total Medals: 85<br>Gold Medals: 15<br>Silver Medals: 29<br>Bronze Medals: 41","CZE<br>Total Medals: 71<br>Gold Medals: 15<br>Silver Medals: 24<br>Bronze Medals: 32","BAH<br>Total Medals: 40<br>Gold Medals: 14<br>Silver Medals: 11<br>Bronze Medals: 15","SVK<br>Total Medals: 42<br>Gold Medals: 13<br>Silver Medals: 17<br>Bronze Medals: 12","INA<br>Total Medals: 41<br>Gold Medals: 11<br>Silver Medals: 17<br>Bronze Medals: 13","IRL<br>Total Medals: 35<br>Gold Medals: 9<br>Silver Medals: 13<br>Bronze Medals: 13","EST<br>Total Medals: 43<br>Gold Medals: 9<br>Silver Medals: 10<br>Bronze Medals: 24","THA<br>Total Medals: 30<br>Gold Medals: 9<br>Silver Medals: 8<br>Bronze Medals: 13","UZB<br>Total Medals: 33<br>Gold Medals: 9<br>Silver Medals: 7<br>Bronze Medals: 17","GEO<br>Total Medals: 32<br>Gold Medals: 8<br>Silver Medals: 6<br>Bronze Medals: 18","AZE<br>Total Medals: 44<br>Gold Medals: 7<br>Silver Medals: 12<br>Bronze Medals: 25","TTO<br>Total Medals: 32<br>Gold Medals: 7<br>Silver Medals: 8<br>Bronze Medals: 17","EGY<br>Total Medals: 27<br>Gold Medals: 7<br>Silver Medals: 8<br>Bronze Medals: 12","SLO<br>Total Medals: 30<br>Gold Medals: 6<br>Silver Medals: 9<br>Bronze Medals: 15","LTU<br>Total Medals: 61<br>Gold Medals: 6<br>Silver Medals: 7<br>Bronze Medals: 48","MAR<br>Total Medals: 23<br>Gold Medals: 6<br>Silver Medals: 5<br>Bronze Medals: 12","COL<br>Total Medals: 28<br>Gold Medals: 5<br>Silver Medals: 9<br>Bronze Medals: 14","ALG<br>Total Medals: 17<br>Gold Medals: 5<br>Silver Medals: 4<br>Bronze Medals: 8","POR<br>Total Medals: 41<br>Gold Medals: 4<br>Silver Medals: 11<br>Bronze Medals: 26","LUX<br>Total Medals: 6<br>Gold Medals: 4<br>Silver Medals: 2<br>Bronze Medals: 0","TPE<br>Total Medals: 49<br>Gold Medals: 3<br>Silver Medals: 28<br>Bronze Medals: 18","LAT<br>Total Medals: 20<br>Gold Medals: 3<br>Silver Medals: 11<br>Bronze Medals: 6","CHI<br>Total Medals: 32<br>Gold Medals: 3<br>Silver Medals: 9<br>Bronze Medals: 20","TUN<br>Total Medals: 13<br>Gold Medals: 3<br>Silver Medals: 3<br>Bronze Medals: 7","DOM<br>Total Medals: 7<br>Gold Medals: 3<br>Silver Medals: 2<br>Bronze Medals: 2","MGL<br>Total Medals: 26<br>Gold Medals: 2<br>Silver Medals: 10<br>Bronze Medals: 14","ARM<br>Total Medals: 16<br>Gold Medals: 2<br>Silver Medals: 5<br>Bronze Medals: 9","VEN<br>Total Medals: 15<br>Gold Medals: 2<br>Silver Medals: 3<br>Bronze Medals: 10","UGA<br>Total Medals: 7<br>Gold Medals: 2<br>Silver Medals: 3<br>Bronze Medals: 2","PER<br>Total Medals: 15<br>Gold Medals: 1<br>Silver Medals: 14<br>Bronze Medals: 0","SGP<br>Total Medals: 9<br>Gold Medals: 1<br>Silver Medals: 4<br>Bronze Medals: 4","VIE<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 3<br>Bronze Medals: 0","PUR<br>Total Medals: 9<br>Gold Medals: 1<br>Silver Medals: 2<br>Bronze Medals: 6","HKG<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 2<br>Bronze Medals: 1","ISR<br>Total Medals: 9<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 7","HAI<br>Total Medals: 7<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 5","CRC<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 2","TJK<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 2","BRN<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 1","CIV<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 1","SYR<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 1","BDI<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 0","ECU<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 0","GRN<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 0","PAR<br>Total Medals: 17<br>Gold Medals: 0<br>Silver Medals: 17<br>Bronze Medals: 0","ISL<br>Total Medals: 17<br>Gold Medals: 0<br>Silver Medals: 15<br>Bronze Medals: 2","MNE<br>Total Medals: 14<br>Gold Medals: 0<br>Silver Medals: 14<br>Bronze Medals: 0","MAS<br>Total Medals: 16<br>Gold Medals: 0<br>Silver Medals: 11<br>Bronze Medals: 5","NAM<br>Total Medals: 4<br>Gold Medals: 0<br>Silver Medals: 4<br>Bronze Medals: 0","PHI<br>Total Medals: 10<br>Gold Medals: 0<br>Silver Medals: 3<br>Bronze Medals: 7","MDA<br>Total Medals: 8<br>Gold Medals: 0<br>Silver Medals: 3<br>Bronze Medals: 5","LIB<br>Total Medals: 4<br>Gold Medals: 0<br>Silver Medals: 2<br>Bronze Medals: 2","SRI<br>Total Medals: 2<br>Gold Medals: 0<br>Silver Medals: 2<br>Bronze Medals: 0","TAN<br>Total Medals: 2<br>Gold Medals: 0<br>Silver Medals: 2<br>Bronze Medals: 0","GHA<br>Total Medals: 23<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 22","KSA<br>Total Medals: 6<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 5","QAT<br>Total Medals: 5<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 4","KGZ<br>Total Medals: 3<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 2","NIG<br>Total Medals: 2<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 1","ZAM<br>Total Medals: 2<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 1","AHO<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 0","BOT<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 0","CYP<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 0","GAB<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 0","GUA<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 0","ISV<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 0","SEN<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 0","SUD<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 0","TGA<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 0"],"hoverinfo":"text","reversescale":true,"colorscale":"Greens","marker":{"line":{"color":"rgb(180,180,180)","width":0.5}},"colorbar":{"autotick":false,"tickprefix":"","title":"Silver"}}],                        {"colorscale":"Blues","width":900,"height":600,"title":"SILVER Medallists' NOCs","geo":{"showframe":false,"showcoastlines":false,"projection":{"type":"Mercator"}}},                        {"responsive": true}                    ).then(function(){
+
+var gd = document.getElementById('c6ec55f7-f7cf-42e9-98ed-69c9932e260e');
+var x = new MutationObserver(function (mutations, observer) {{
+        var display = window.getComputedStyle(gd).display;
+        if (!display || display === 'none') {{
+            console.log([gd, 'removed!']);
+            Plotly.purge(gd);
+            observer.disconnect();
+        }}
+}});
+
+// Listen for the removal of the full notebook cells
+var notebookContainer = gd.closest('#notebook-container');
+if (notebookContainer) {{
+    x.observe(notebookContainer, {childList: true});
+}}
+
+// Listen for the clearing of the current output cell
+var outputEl = gd.closest('.output');
+if (outputEl) {{
+    x.observe(outputEl, {childList: true});
+}}
+
+                        })                };                });            </script>        </div>
 
 
-# Bronze Medals based on Countries
+### 3.17.3 Bronze Medals based on Countries
 
 
 
@@ -2626,5 +3478,46 @@ fig = dict(data=data, layout=layout)
 iplot(fig,validate=False)
 
 ```
-![45](genericExploration_files/45.png)
 
+
+<div>                            <div id="95004dd1-60cb-4588-9861-179b40e546bd" class="plotly-graph-div" style="height:600px; width:900px;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("95004dd1-60cb-4588-9861-179b40e546bd")) {                    Plotly.newPlot(                        "95004dd1-60cb-4588-9861-179b40e546bd",                        [{"type":"choropleth","locations":["USA","GBR","DEU","ITA","FRA","HUN","SWE","AUS","CHN","RUS","NLD","JPN","NOR","DNK","KOR","CUB","ROU","CAN","DEU","FIN","IND","POL","ESP","BRA","CHE","BEL","ARG","NZL","GRC","HRV","BGR","UKR","PAK","TUR","JAM","KEN","ZAF","URY","MEX","AUT","NGA","ETH","CMR","KAZ","BLR","IRN","ZWE","PRK","SRB","CZE","BHS","SVK","IDN","IRL","EST","THA","UZB","GEO","AZE","TTO","EGY","SVN","LTU","MAR","COL","DZA","PRT","TWN","LVA","CHL","TUN","DOM","MNG","ARM","VEN","UGA","SGP","PRI","HKG","ISR","HTI","CRI","TJK","BHR","CIV","SYR","PAN","MOZ","SUR","ARE","ISL","MYS","PHL","MDA","LBN","GHA","SAU","QAT","KGZ","NER","ZMB","AFG","KWT","BRB","BMU","DJI","ERI","GUY","IRQ","MKD","MCO","MUS","TGO"],"z":[1197,620,649,454,587,363,358,510,258,331,371,333,167,177,175,116,290,344,188,217,40,242,135,191,139,166,91,82,84,36,141,95,34,28,44,31,52,30,54,53,46,22,1,29,66,29,1,34,41,32,15,12,13,13,24,13,17,18,25,17,12,15,48,12,14,8,26,18,6,20,7,2,14,9,10,2,4,6,1,7,5,2,2,1,1,1,2,1,1,1,2,5,7,5,2,22,5,4,2,1,1,2,2,1,1,1,1,1,1,1,1,1,1],"text":["USA<br>Total Medals: 5002<br>Gold Medals: 2472<br>Silver Medals: 1333<br>Bronze Medals: 1197","GBR<br>Total Medals: 1985<br>Gold Medals: 636<br>Silver Medals: 729<br>Bronze Medals: 620","GER<br>Total Medals: 1779<br>Gold Medals: 592<br>Silver Medals: 538<br>Bronze Medals: 649","ITA<br>Total Medals: 1446<br>Gold Medals: 518<br>Silver Medals: 474<br>Bronze Medals: 454","FRA<br>Total Medals: 1627<br>Gold Medals: 465<br>Silver Medals: 575<br>Bronze Medals: 587","HUN<br>Total Medals: 1123<br>Gold Medals: 432<br>Silver Medals: 328<br>Bronze Medals: 363","SWE<br>Total Medals: 1108<br>Gold Medals: 354<br>Silver Medals: 396<br>Bronze Medals: 358","AUS<br>Total Medals: 1304<br>Gold Medals: 342<br>Silver Medals: 452<br>Bronze Medals: 510","CHN<br>Total Medals: 909<br>Gold Medals: 334<br>Silver Medals: 317<br>Bronze Medals: 258","RUS<br>Total Medals: 905<br>Gold Medals: 296<br>Silver Medals: 278<br>Bronze Medals: 331","NED<br>Total Medals: 918<br>Gold Medals: 245<br>Silver Medals: 302<br>Bronze Medals: 371","JPN<br>Total Medals: 850<br>Gold Medals: 230<br>Silver Medals: 287<br>Bronze Medals: 333","NOR<br>Total Medals: 590<br>Gold Medals: 227<br>Silver Medals: 196<br>Bronze Medals: 167","DEN<br>Total Medals: 592<br>Gold Medals: 179<br>Silver Medals: 236<br>Bronze Medals: 177","KOR<br>Total Medals: 552<br>Gold Medals: 171<br>Silver Medals: 206<br>Bronze Medals: 175","CUB<br>Total Medals: 409<br>Gold Medals: 164<br>Silver Medals: 129<br>Bronze Medals: 116","ROU<br>Total Medals: 651<br>Gold Medals: 161<br>Silver Medals: 200<br>Bronze Medals: 290","CAN<br>Total Medals: 741<br>Gold Medals: 158<br>Silver Medals: 239<br>Bronze Medals: 344","FRG<br>Total Medals: 504<br>Gold Medals: 144<br>Silver Medals: 172<br>Bronze Medals: 188","FIN<br>Total Medals: 474<br>Gold Medals: 132<br>Silver Medals: 125<br>Bronze Medals: 217","IND<br>Total Medals: 190<br>Gold Medals: 131<br>Silver Medals: 19<br>Bronze Medals: 40","POL<br>Total Medals: 538<br>Gold Medals: 111<br>Silver Medals: 185<br>Bronze Medals: 242","ESP<br>Total Medals: 487<br>Gold Medals: 109<br>Silver Medals: 243<br>Bronze Medals: 135","BRA<br>Total Medals: 475<br>Gold Medals: 109<br>Silver Medals: 175<br>Bronze Medals: 191","SUI<br>Total Medals: 416<br>Gold Medals: 99<br>Silver Medals: 178<br>Bronze Medals: 139","BEL<br>Total Medals: 455<br>Gold Medals: 96<br>Silver Medals: 193<br>Bronze Medals: 166","ARG<br>Total Medals: 274<br>Gold Medals: 91<br>Silver Medals: 92<br>Bronze Medals: 91","NZL<br>Total Medals: 227<br>Gold Medals: 90<br>Silver Medals: 55<br>Bronze Medals: 82","GRE<br>Total Medals: 255<br>Gold Medals: 62<br>Silver Medals: 109<br>Bronze Medals: 84","CRO<br>Total Medals: 138<br>Gold Medals: 54<br>Silver Medals: 48<br>Bronze Medals: 36","BUL<br>Total Medals: 336<br>Gold Medals: 53<br>Silver Medals: 142<br>Bronze Medals: 141","UKR<br>Total Medals: 188<br>Gold Medals: 42<br>Silver Medals: 51<br>Bronze Medals: 95","PAK<br>Total Medals: 121<br>Gold Medals: 42<br>Silver Medals: 45<br>Bronze Medals: 34","TUR<br>Total Medals: 95<br>Gold Medals: 40<br>Silver Medals: 27<br>Bronze Medals: 28","JAM<br>Total Medals: 157<br>Gold Medals: 38<br>Silver Medals: 75<br>Bronze Medals: 44","KEN<br>Total Medals: 106<br>Gold Medals: 34<br>Silver Medals: 41<br>Bronze Medals: 31","RSA<br>Total Medals: 131<br>Gold Medals: 32<br>Silver Medals: 47<br>Bronze Medals: 52","URU<br>Total Medals: 63<br>Gold Medals: 31<br>Silver Medals: 2<br>Bronze Medals: 30","MEX<br>Total Medals: 110<br>Gold Medals: 30<br>Silver Medals: 26<br>Bronze Medals: 54","AUT<br>Total Medals: 170<br>Gold Medals: 29<br>Silver Medals: 88<br>Bronze Medals: 53","NGR<br>Total Medals: 99<br>Gold Medals: 23<br>Silver Medals: 30<br>Bronze Medals: 46","ETH<br>Total Medals: 53<br>Gold Medals: 22<br>Silver Medals: 9<br>Bronze Medals: 22","CMR<br>Total Medals: 22<br>Gold Medals: 20<br>Silver Medals: 1<br>Bronze Medals: 1","KAZ<br>Total Medals: 70<br>Gold Medals: 19<br>Silver Medals: 22<br>Bronze Medals: 29","BLR<br>Total Medals: 124<br>Gold Medals: 18<br>Silver Medals: 40<br>Bronze Medals: 66","IRI<br>Total Medals: 68<br>Gold Medals: 18<br>Silver Medals: 21<br>Bronze Medals: 29","ZIM<br>Total Medals: 22<br>Gold Medals: 17<br>Silver Medals: 4<br>Bronze Medals: 1","PRK<br>Total Medals: 65<br>Gold Medals: 16<br>Silver Medals: 15<br>Bronze Medals: 34","SRB<br>Total Medals: 85<br>Gold Medals: 15<br>Silver Medals: 29<br>Bronze Medals: 41","CZE<br>Total Medals: 71<br>Gold Medals: 15<br>Silver Medals: 24<br>Bronze Medals: 32","BAH<br>Total Medals: 40<br>Gold Medals: 14<br>Silver Medals: 11<br>Bronze Medals: 15","SVK<br>Total Medals: 42<br>Gold Medals: 13<br>Silver Medals: 17<br>Bronze Medals: 12","INA<br>Total Medals: 41<br>Gold Medals: 11<br>Silver Medals: 17<br>Bronze Medals: 13","IRL<br>Total Medals: 35<br>Gold Medals: 9<br>Silver Medals: 13<br>Bronze Medals: 13","EST<br>Total Medals: 43<br>Gold Medals: 9<br>Silver Medals: 10<br>Bronze Medals: 24","THA<br>Total Medals: 30<br>Gold Medals: 9<br>Silver Medals: 8<br>Bronze Medals: 13","UZB<br>Total Medals: 33<br>Gold Medals: 9<br>Silver Medals: 7<br>Bronze Medals: 17","GEO<br>Total Medals: 32<br>Gold Medals: 8<br>Silver Medals: 6<br>Bronze Medals: 18","AZE<br>Total Medals: 44<br>Gold Medals: 7<br>Silver Medals: 12<br>Bronze Medals: 25","TTO<br>Total Medals: 32<br>Gold Medals: 7<br>Silver Medals: 8<br>Bronze Medals: 17","EGY<br>Total Medals: 27<br>Gold Medals: 7<br>Silver Medals: 8<br>Bronze Medals: 12","SLO<br>Total Medals: 30<br>Gold Medals: 6<br>Silver Medals: 9<br>Bronze Medals: 15","LTU<br>Total Medals: 61<br>Gold Medals: 6<br>Silver Medals: 7<br>Bronze Medals: 48","MAR<br>Total Medals: 23<br>Gold Medals: 6<br>Silver Medals: 5<br>Bronze Medals: 12","COL<br>Total Medals: 28<br>Gold Medals: 5<br>Silver Medals: 9<br>Bronze Medals: 14","ALG<br>Total Medals: 17<br>Gold Medals: 5<br>Silver Medals: 4<br>Bronze Medals: 8","POR<br>Total Medals: 41<br>Gold Medals: 4<br>Silver Medals: 11<br>Bronze Medals: 26","TPE<br>Total Medals: 49<br>Gold Medals: 3<br>Silver Medals: 28<br>Bronze Medals: 18","LAT<br>Total Medals: 20<br>Gold Medals: 3<br>Silver Medals: 11<br>Bronze Medals: 6","CHI<br>Total Medals: 32<br>Gold Medals: 3<br>Silver Medals: 9<br>Bronze Medals: 20","TUN<br>Total Medals: 13<br>Gold Medals: 3<br>Silver Medals: 3<br>Bronze Medals: 7","DOM<br>Total Medals: 7<br>Gold Medals: 3<br>Silver Medals: 2<br>Bronze Medals: 2","MGL<br>Total Medals: 26<br>Gold Medals: 2<br>Silver Medals: 10<br>Bronze Medals: 14","ARM<br>Total Medals: 16<br>Gold Medals: 2<br>Silver Medals: 5<br>Bronze Medals: 9","VEN<br>Total Medals: 15<br>Gold Medals: 2<br>Silver Medals: 3<br>Bronze Medals: 10","UGA<br>Total Medals: 7<br>Gold Medals: 2<br>Silver Medals: 3<br>Bronze Medals: 2","SGP<br>Total Medals: 9<br>Gold Medals: 1<br>Silver Medals: 4<br>Bronze Medals: 4","PUR<br>Total Medals: 9<br>Gold Medals: 1<br>Silver Medals: 2<br>Bronze Medals: 6","HKG<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 2<br>Bronze Medals: 1","ISR<br>Total Medals: 9<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 7","HAI<br>Total Medals: 7<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 5","CRC<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 2","TJK<br>Total Medals: 4<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 2","BRN<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 1","CIV<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 1","SYR<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 1<br>Bronze Medals: 1","PAN<br>Total Medals: 3<br>Gold Medals: 1<br>Silver Medals: 0<br>Bronze Medals: 2","MOZ<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 0<br>Bronze Medals: 1","SUR<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 0<br>Bronze Medals: 1","UAE<br>Total Medals: 2<br>Gold Medals: 1<br>Silver Medals: 0<br>Bronze Medals: 1","ISL<br>Total Medals: 17<br>Gold Medals: 0<br>Silver Medals: 15<br>Bronze Medals: 2","MAS<br>Total Medals: 16<br>Gold Medals: 0<br>Silver Medals: 11<br>Bronze Medals: 5","PHI<br>Total Medals: 10<br>Gold Medals: 0<br>Silver Medals: 3<br>Bronze Medals: 7","MDA<br>Total Medals: 8<br>Gold Medals: 0<br>Silver Medals: 3<br>Bronze Medals: 5","LIB<br>Total Medals: 4<br>Gold Medals: 0<br>Silver Medals: 2<br>Bronze Medals: 2","GHA<br>Total Medals: 23<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 22","KSA<br>Total Medals: 6<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 5","QAT<br>Total Medals: 5<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 4","KGZ<br>Total Medals: 3<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 2","NIG<br>Total Medals: 2<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 1","ZAM<br>Total Medals: 2<br>Gold Medals: 0<br>Silver Medals: 1<br>Bronze Medals: 1","AFG<br>Total Medals: 2<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 2","KUW<br>Total Medals: 2<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 2","BAR<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 1","BER<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 1","DJI<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 1","ERI<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 1","GUY<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 1","IRQ<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 1","MKD<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 1","MON<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 1","MRI<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 1","TOG<br>Total Medals: 1<br>Gold Medals: 0<br>Silver Medals: 0<br>Bronze Medals: 1"],"hoverinfo":"text","colorscale":"Yellows","marker":{"line":{"color":"rgb(180,180,180)","width":0.5}},"colorbar":{"autotick":false,"tickprefix":"","title":"Bronze"}}],                        {"colorscale":"Gold","width":900,"height":600,"title":"BRONZE Medallists' NOCs","geo":{"showframe":false,"showcoastlines":false,"projection":{"type":"Mercator"}}},                        {"responsive": true}                    ).then(function(){
+
+var gd = document.getElementById('95004dd1-60cb-4588-9861-179b40e546bd');
+var x = new MutationObserver(function (mutations, observer) {{
+        var display = window.getComputedStyle(gd).display;
+        if (!display || display === 'none') {{
+            console.log([gd, 'removed!']);
+            Plotly.purge(gd);
+            observer.disconnect();
+        }}
+}});
+
+// Listen for the removal of the full notebook cells
+var notebookContainer = gd.closest('#notebook-container');
+if (notebookContainer) {{
+    x.observe(notebookContainer, {childList: true});
+}}
+
+// Listen for the clearing of the current output cell
+var outputEl = gd.closest('.output');
+if (outputEl) {{
+    x.observe(outputEl, {childList: true});
+}}
+
+                        })                };                });            </script>        </div>
+
+
+# 4. Summary
+We found some interesting hindsight. Why hindsight? Because they were there, maybe we just never paid attention.
+
+- Some interesting sports were part of the Olympic program
+- The Olympic Games were always held every 4 years, with exception of the World Wars and the COVID pandemic. However, we find an Olympic Games in 1906, while there were also Olympic Games in 1904 and 1908. These were called 'The 1906 Intercalated Games' . These Games were held by the IOC, but later they were unrecognized.
+- The oldest Olympian ever, John Quincy Adams Ward, participated in the 1928 Olympics post-mortem. In reality, his art participated but not him personally.
+- Most of the Olympians are between 21 and 29 years old.
+- We can see that the Gold Medalist's Age concentration is mainly between 19 and 26 years.
+- The men athletes' population is getting taller.
+
+
+Did you like it? What questions would you do to this dataset?
+
+Thanks for reading!
